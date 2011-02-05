@@ -1,4 +1,6 @@
 task :build do
+  puts %x{rm -r vendor/cache}
+  
   # Download all gems into vendor/cache
   puts %x{bundle package}
   
