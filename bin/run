@@ -1,5 +1,13 @@
 #!/usr/bin/env ruby
 
-$:.push File.expand_path("../", __FILE__)
+Dir["#{File.expand_path('../../vendor/cache', __FILE__)}/**"].map { |dir| File.directory?(lib = "#{dir}/lib") ? lib : dir }.each do |folder|
+  $:.unshift(folder)
+end
+
+$:.push File.expand_path("../../lib", __FILE__)
+
+require 'daemons'
 require 'movish_script'
-MovishScript.run("The.Big.Bang.Theory.S04E14.The.Thespian.Catalyst.HDTV.XviD-FQM.avi", "/Users/linus/Downloads") 
+
+Daemons.daemonize
+MovishScript.run(ARGV[0], ARGV[1]) 

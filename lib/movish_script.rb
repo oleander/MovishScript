@@ -1,9 +1,5 @@
 # encoding: utf-8
 
-Dir["#{File.expand_path('../../vendor/cache', __FILE__)}/**"].map { |dir| File.directory?(lib = "#{dir}/lib") ? lib : dir }.each do |folder|
-  $:.unshift(folder)
-end
-
 # Status codes
   # 1 - Empty arguments
   # 2 - No movie found

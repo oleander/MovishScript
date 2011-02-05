@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
   s.add_dependency('ruby-growl')
   s.add_dependency('movie_searcher')
   s.add_dependency('undertexter')
+  s.add_dependency('daemons')
   
   s.add_development_dependency('rspec')
 end
