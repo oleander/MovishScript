@@ -1,13 +1,11 @@
-
+Dir["#{File.expand_path('../../vendor/cache', __FILE__)}/**"].map { |dir| File.directory?(lib = "#{dir}/lib") ? lib : dir }.each do |folder|
+  $:.unshift(folder)
+end
 
 require 'unpack'
 require 'ruby-growl'
 require 'movie_searcher'
 require 'undertexter'
-
-# Dir["#{File.expand_path('../vendor/cache', __FILE__)}/**"].map { |dir| File.directory?(lib = "#{dir}/lib") ? lib : dir }.each do |folder|
-#   $LOAD_PATH.unshift(folder)
-# end
 
 module MovishScript
   def self.run(name, dir)
@@ -54,7 +52,7 @@ module MovishScript
     file = subtitle.download!
 
     # Packar upp undertexten och skickar och skickar innehallet till den nerladdade mappen
-    Unpack.it!(file: file, to: path) unless file.nil?
+    Unpack.it!(:file => file, :to => path) unless file.nil?
 
     # Meddelar anvandaren att allt gick bra
     growl.notify("ruby-growl Notification", "Undertext hittades", subtitle.title)
