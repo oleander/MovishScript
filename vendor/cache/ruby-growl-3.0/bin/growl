@@ -1,0 +1,6 @@
+#!/usr/local/bin/ruby -w
+
+require 'ruby-growl'
+
+Growl.run ARGV
+
