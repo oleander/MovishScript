@@ -1,2 +1,5 @@
 #!/usr/bin/env ruby
+
+$:.push File.expand_path("../", __FILE__)
+require 'movish_script'
 MovishScript.run("The.Big.Bang.Theory.S04E14.The.Thespian.Catalyst.HDTV.XviD-FQM.avi", "/Users/linus/Downloads") 
