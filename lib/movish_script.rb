@@ -4,7 +4,9 @@
   # 1 - Empty arguments
   # 2 - No movie found
   # 3 - No subtitle found
-
+  # 4 - Subtitle deactivated
+  # 5 - Unpacking success
+  # 6 - Unpacking failed
 
 require 'unpack'
 require 'ruby-growl'
@@ -13,76 +15,124 @@ require 'undertexter'
 require 'yaml'
 
 class MovishScript
-  attr_accessor :file, :config
+  attr_accessor :file, :config, :imdb_movie, :files
   
-  def initialize(args)
+  def initialize(args = {})
     @growl  = Growl.new("localhost", "ruby-growl", ["ruby-growl Notification"])
     @file   = File.expand_path(args[:config] || "lib/movish_script/config.yaml")
     @config = YAML::load(File.read(@file))
   end
   
-  def growl(title, body, type)
-    @growl.notify("ruby-growl Notification", title, body) if @config[:growl][:global] and @config[:growl][type]
-  end
-  
   def self.run(args)
-    dir, name = args[:dir], args[:file] 
-    # If no arguments a being passed, then we do nothing
-    return 1 if dir.nil? or name.nil? or dir.empty? or name.empty?
+    dir, file = args[:dir], args[:file] 
+
+    this = MovishScript.new(args); @status = []
     
-    this = MovishScript.new(args)
+    # If no arguments a being passed or it's deactivated
+    return 1 if dir.nil? or file.nil? or dir.empty? or file.empty? or not this.config[:system][:active]
     
     this.growl("Movish", "Vänta...", :init)
 
     # Hela lankvagen till filen som laddades hem
-    full_path = "#{dir}/#{name}"
-
+    full_path = "#{dir}/#{file}"
+    
     # Absoluta lank-vagen till filen/mappen
     path = File.directory?(full_path) ? full_path : File.dirname(full_path)
-
-    # Titlen pa den nerladdade filen/mappen
-    title = name
-
-    # Packar upp filerna, savida det var en mapp vi laddade hem
-    files = File.directory?(full_path) ? Unpack.runner!(full_path) : []
     
-    # Meddelar anvandaren om att nerladdningen ar uppackad, om nagot fanns att packa upp
-    this.growl("Uppackat!", title, :unpack) if files.any?
-
-    # Hamtar filmen fran IMDB
-    movie = MovieSearcher.find_by_download(full_path)
-
-    # Avbryter om vi inte hittade nagon film
-    if movie.nil?
-      this.growl("Inget hittades",  title, :movie); return 2
-    end
+    # Unpacks the movie
+    @status.push this.unpack(:full_path => full_path, :file => file)
     
-    # Hamtar undertexten
-    subtitle = Undertexter.find(movie.imdb_id).based_on(title)
+    # Gets some info about the movie
+    @status.push this.movie(:full_path => full_path, :file => file)
     
-    # Avbryter om vi inte hittade nagon undertext
-    if subtitle.nil?
-      this.growl("Ingen undertext hittades", movie.title, :movie); return 3
-    end
-    
-    # Laddar ner undertexten
-    file = subtitle.download!
-
-    # Packar upp undertexten och skickar och skickar innehallet till den nerladdade mappen
-    Unpack.it!(:file => file, :to => path) unless file.nil?
-
-    # Meddelar anvandaren att allt gick bra
-    this.growl("Undertext hittades", subtitle.title, :subtitle)
+    # Downloads the subtitle
+    @status.push this.subtitle(:file => file, :path => path) if this.imdb_movie
   end
   
+  # Returns the status code for the operation
+  def self.status; @status ||= []; end
+  
+  # Writes to the config file
   def self.config(args)
-    this = MovishScript.new(args[:options])
+    return if args[:write].nil?
+    
+    this = MovishScript.new(args[:options] || {})
     args[:write].each do |attr, value|
+      
+      # Skipping this loop if the ingoing params is wrong
+      next unless attr.match(/[a-z]*\.[a-z]*/i)
       this.config[attr.split('.').first.to_sym][attr.split('.').last.to_sym] = value
     end
     
     file = File.new(this.file, 'w+')
     file.write(this.config.to_yaml)
     file.close
+  end
+  
+  def growl(title, body, type)
+    @growl.notify("ruby-growl Notification", title, body) if @config[:growl][:global] and @config[:growl][type]
+  end
+  
+  # Downloads the subtitle
+  # Ingoing arguments
+    # file The name of the download, {Solsidan.S02E03.SWEDiSH.WEBRiP.XviD-PageDown} for example
+    # movie The movie returned from {MovieSearcher}
+    # path The path to the download
+  def subtitle(args)
+    # If no movie is found, we quit
+    return 4 unless self.config[:subtitle][:active]
+    
+    file, movie, path = args[:file], self.imdb_movie, args[:path]
+    
+    subtitle = Undertexter.find(movie.imdb_id, self.config[:subtitle]).based_on(file)
+    
+    # Avbryter om vi inte hittade nagon undertext
+    if subtitle.nil?
+      self.growl("Ingen undertext hittades", movie.title, :subtitle); return 3
+    end
+    
+    # Laddar ner undertexten
+    sub_file = subtitle.download!
+
+    # Packar upp undertexten och skickar och skickar innehallet till den nerladdade mappen
+    Unpack.it!(:file => sub_file, :to => path) unless sub_file.nil?
+
+    # Meddelar anvandaren att allt gick bra
+    self.growl("Undertext hittades", subtitle.title, :subtitle)
+  end
+  
+  # Unpacks the download movie
+  # Ingoing arguments
+    # full_path The absolut path to the download
+    # title The title of the downloaded movie
+  def unpack(args)
+    full_path, file = args[:full_path], args[:file]
+    
+    # Is unpack activated?
+    if self.config[:unpack][:active]
+      self.files = File.directory?(full_path) ? Unpack.runner!(full_path, self.config[:unpack]) : []
+    else
+      self.files = []
+    end
+    
+    if files.any?
+      self.growl("Uppackat!", file, :unpack); return 5
+    else
+      return 6
+    end
+  end
+  
+  def movie(args)
+    full_path, file = args[:full_path], args[:file]
+    
+    # Hamtar filmen fran IMDB
+    movie = MovieSearcher.find_by_download(full_path)
+    
+    # Avbryter om vi inte hittade nagon film
+    if movie.nil?
+      self.growl("Inget hittades",  file, :movie); return 2
+    else
+      self.imdb_movie = movie
+    end
   end
 end

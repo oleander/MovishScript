@@ -8,7 +8,8 @@ module MovishConfig
         :min_files => 5,
         :depth => 2,
         :force_remove => false,
-        :remove => false
+        :remove => false,
+        :active => true
       },
       :growl => {
         :global => true,
