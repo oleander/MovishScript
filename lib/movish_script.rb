@@ -15,12 +15,34 @@ require 'undertexter'
 require 'yaml'
 
 class MovishScript
-  attr_accessor :file, :config, :imdb_movie, :files
+  attr_accessor :file, :config, :imdb_movie, :files, :messages
   
   def initialize(args = {})
     @growl  = Growl.new("localhost", "ruby-growl", ["ruby-growl Notification"])
     @file   = File.expand_path(args[:config] || "lib/movish_script/config.yaml")
     @config = YAML::load(File.read(@file))
+    @messages = {
+      :init => {
+        :title => "Movish",
+        :body => "Vänta..."
+      },
+      :subtitle => {
+        :nothing => {
+          :title => "Inget hittades"
+        },
+        :found => {
+          :title => "Undertext hittades"
+        }
+      },
+      :unpack => {
+        :title => "Uppackat!"
+      },
+      :movie => {
+        :nothing => {
+          :title => "Inget hittades"
+        }
+      }
+    }
   end
   
   def self.run(args)
@@ -31,7 +53,7 @@ class MovishScript
     # If no arguments a being passed or deactivated
     return 1 if dir.nil? or file.nil? or dir.empty? or file.empty? or not this.config[:system][:active]
     
-    this.growl("Movish", "Vänta...", :init)
+    this.growl(this.messages[:init][:title], this.messages[:init][:body], :init)
     
     # The absolute path to the download
     path = File.directory?(full_path) ? full_path : File.dirname(full_path)
@@ -93,7 +115,7 @@ class MovishScript
     
     # Avbryter om vi inte hittade nagon undertext
     if subtitle.nil?
-      self.growl("Ingen undertext hittades", movie.title, :subtitle); return 3
+      self.growl(self.messages[:subtitle][:nothing][:title], movie.title, :subtitle); return 3
     end
     
     # Laddar ner undertexten
@@ -103,7 +125,7 @@ class MovishScript
     Unpack.it!(:file => sub_file, :to => path) unless sub_file.nil?
 
     # Meddelar anvandaren att allt gick bra
-    self.growl("Undertext hittades", subtitle.title, :subtitle)
+    self.growl(self.messages[:subtitle][:found][:title], subtitle.title, :subtitle)
   end
   
   # Unpacks the download movie
@@ -121,7 +143,7 @@ class MovishScript
     end
     
     if files.any?
-      self.growl("Uppackat!", file, :unpack); return 5
+      self.growl(self.messages[:unpack][:title], file, :unpack); return 5
     else
       return 6
     end
@@ -139,7 +161,7 @@ class MovishScript
     
     # Avbryter om vi inte hittade nagon film
     if movie.nil?
-      self.growl("Inget hittades",  file, :movie); return 2
+      self.growl(self.messages[:movie][:nothing][:title],  file, :movie); return 2
     else
       self.imdb_movie = movie
     end
