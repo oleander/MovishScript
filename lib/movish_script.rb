@@ -58,7 +58,14 @@ class MovishScript
       
       # Skipping this loop if the ingoing params is wrong
       next unless attr.match(/[a-z]*\.[a-z]*/i)
-      this.config[attr.split('.').first.to_sym][attr.split('.').last.to_sym] = value
+      first_key = attr.split('.').first.to_sym
+      last_key = attr.split('.').last.to_sym
+      
+      # If the config does not exist, then we will create one
+      this.config[first_key] = {} unless this.config.keys.include?(first_key)
+      this.config[first_key][last_key] = {} unless this.config[first_key].keys.include?(last_key)
+      
+      this.config[first_key][last_key] = value
     end
     
     file = File.new(this.file, 'w+')

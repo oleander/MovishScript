@@ -12,6 +12,10 @@ def movie
   MovieSearcher.should_receive(:find_by_download).and_return(Struct::Movie.new('tt1235234', 'a title'))
 end
 
+def config(key, value)
+  %x{bin/config #{key} #{value}}
+end
+
 # How many times should growl be called?
 def growl(times)
   growl = mock(Growl)
@@ -165,5 +169,52 @@ describe MovishScript do
   it "should return 1 if the system is deactivated" do
     MovishScript.config(:write => {'system.active' => false})
     MovishScript.run(:dir => "/tmp", :file => "iii").should eq(1)
+  end
+end
+
+describe MovishScript, "should be able to write to config" do
+  before(:each) do
+    MovishConfig::generate!
+  end
+  
+  it "should work to write the config file using a boolean" do
+    config('system.active', 'false')
+    MovishConfig::read[:system][:active].should be_instance_of(FalseClass)
+  end
+  
+  it "should work to write the config file using a integer" do
+    config('unpack.min_files', '4')
+    MovishConfig::read[:unpack][:min_files].should be_instance_of(Fixnum)
+    MovishConfig::read[:unpack][:min_files].should eq(4)
+  end
+  
+  it "should work to write the config file using a string" do
+    config('testing.some', 'some_value')
+    MovishConfig::read[:testing][:some].should be_instance_of(String)
+    MovishConfig::read[:testing][:some].should eq("some_value")
+  end
+  
+  it "should work to write the config file using a symbol" do
+    config('subtitle.language', ':some_value')
+    MovishConfig::read[:subtitle][:language].should be_instance_of(Symbol)
+    MovishConfig::read[:subtitle][:language].should eq(:some_value)
+  end
+  
+  it "should ignore whitespace" do
+    config('         subtitle.language          ', '                 :some_value                  ')
+    MovishConfig::read[:subtitle][:language].should be_instance_of(Symbol)
+    MovishConfig::read[:subtitle][:language].should eq(:some_value)
+  end
+  
+  it "should abort if there is to few arguments" do
+    config('subtitle.language', '')
+    MovishConfig::read[:subtitle][:language].should be_instance_of(Symbol)
+    MovishConfig::read[:subtitle][:language].should eq(:swedish)
+  end
+  
+  it "should abort if I pass some wrong arguments" do
+    config('subtitle language', 'some_value')
+    MovishConfig::read[:subtitle][:language].should be_instance_of(Symbol)
+    MovishConfig::read[:subtitle][:language].should eq(:swedish)
   end
 end

@@ -1,3 +1,4 @@
+require 'yaml'
 module MovishConfig
   def self.generate!(file = "lib/movish_script/config.yaml")
     yaml = {
@@ -27,5 +28,9 @@ module MovishConfig
     open = File.new(file, 'w+')
     open.write(yaml)
     open.close
+  end
+  
+  def self.read(file = "lib/movish_script/config.yaml")
+    YAML.load(File.read(file))
   end
 end

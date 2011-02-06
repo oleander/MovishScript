@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+$:.push File.expand_path("../../lib", __FILE__)
+
+require 'movish_script'
+
+# It has to have 2 arguments
+abort if not ARGV.count == 2 or not ARGV[0].match(/[a-z]*\.[a-z]*/i)
+ 
+# If the eval for some reason don't work, then we will abort
+ARGV[1] = ARGV[1].match(/^(true|false|\d+|:.+)$/) ? eval(ARGV[1]) : ARGV[1] # rescue nil
+
+MovishScript.config(:write => {ARGV[0] => ARGV[1]}) unless ARGV[1].nil?
