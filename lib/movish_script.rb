@@ -28,7 +28,7 @@ class MovishScript
       },
       :subtitle => {
         :nothing => {
-          :title => "Inget hittades"
+          :title => "Ingen undertext hittades"
         },
         :found => {
           :title => "Undertext hittades"

@@ -13,7 +13,7 @@ def movie
 end
 
 def config(key, value)
-  %x{bin/config #{key} #{value}}
+  %x{bin/m_config #{key} #{value}}
 end
 
 # How many times should growl be called?
@@ -25,6 +25,8 @@ end
 
 # Deactivating Growl, for now
 class Growl; def notify(a,b,c); end; end
+class Daemons; def self.daemonize; end; end
+
 Struct.new('Movie', :imdb_id, :title)
 
 describe MovishScript do

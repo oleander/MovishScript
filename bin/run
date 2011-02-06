@@ -1,9 +1,0 @@
-# #!/usr/bin/env ruby
-
-$:.push File.expand_path("../../lib", __FILE__)
-
-require 'daemons'
-require 'movish_script'
-
-Daemons.daemonize
-MovishScript.run(ARGV[0], ARGV[1])

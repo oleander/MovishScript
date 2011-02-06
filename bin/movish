@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+$:.push File.expand_path("../../lib", __FILE__)
+
+require 'daemons'
+require 'movish_script'
+
+Daemons.daemonize
+if ENV['TR_TORRENT_DIR'] and ENV['TR_TORRENT_NAME']
+  ARGV[0], ARGV[1] = ENV['TR_TORRENT_DIR'], ENV['TR_TORRENT_NAME']
+elsif(not ARGV.count == 2)
+  abort "To few arguments"
+end
+  
+MovishScript.run(:dir => ARGV[0], :file => ARGV[1])
