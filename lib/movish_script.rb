@@ -26,17 +26,14 @@ class MovishScript
   def self.run(args)
     dir, file = args[:dir], args[:file] 
 
-    this = MovishScript.new(args); @status = []
+    this = MovishScript.new(args); @status = []; full_path = "#{dir}/#{file}"
     
-    # If no arguments a being passed or it's deactivated
+    # If no arguments a being passed or deactivated
     return 1 if dir.nil? or file.nil? or dir.empty? or file.empty? or not this.config[:system][:active]
     
     this.growl("Movish", "Vänta...", :init)
-
-    # Hela lankvagen till filen som laddades hem
-    full_path = "#{dir}/#{file}"
     
-    # Absoluta lank-vagen till filen/mappen
+    # The absolute path to the download
     path = File.directory?(full_path) ? full_path : File.dirname(full_path)
     
     # Unpacks the movie
@@ -69,6 +66,7 @@ class MovishScript
     file.close
   end
   
+  # Sends a message using growl
   def growl(title, body, type)
     @growl.notify("ruby-growl Notification", title, body) if @config[:growl][:global] and @config[:growl][type]
   end
@@ -122,6 +120,10 @@ class MovishScript
     end
   end
   
+  # Downloads some info from IMDB using {MovieSearcher}
+  # Ingoing arguments
+    # full_path The full path to download
+    # file The name of the download
   def movie(args)
     full_path, file = args[:full_path], args[:file]
     
