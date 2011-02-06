@@ -1,9 +1,10 @@
-Dir["#{File.expand_path('../vendor/cache', __FILE__)}/**"].map { |dir| File.directory?(lib = "#{dir}/lib") ? lib : dir }.each do |folder|
-  $:.unshift(folder)
-end
-
 require 'rspec'
-require "#{File.dirname(__FILE__)}/../lib/movish_script"
+
+$:.push File.expand_path("../../lib/movish_script/", __FILE__)
+$:.push File.expand_path("../../lib/", __FILE__)
+
+require "movish_script"
+require "movish_config"
 
 RSpec.configure do |config|
   config.mock_with :rspec

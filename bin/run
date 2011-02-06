@@ -1,8 +1,4 @@
-#!/usr/bin/env ruby
-
-Dir["#{File.expand_path('../../vendor/cache', __FILE__)}/**"].map { |dir| File.directory?(lib = "#{dir}/lib") ? lib : dir }.each do |folder|
-  $:.unshift(folder)
-end
+# #!/usr/bin/env ruby
 
 $:.push File.expand_path("../../lib", __FILE__)
 
@@ -10,4 +6,4 @@ require 'daemons'
 require 'movish_script'
 
 Daemons.daemonize
-MovishScript.run(ARGV[0], ARGV[1]) 
+MovishScript.run(ARGV[0], ARGV[1])

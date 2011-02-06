@@ -1,15 +1,6 @@
 task :build do
-  %x{rm -r vendor/cache}
-  
-  # Download all gems into vendor/cache
-  puts %x{bundle package}
-  
-  # Unpack all gems
-  %x{cd vendor/cache && find . -name '*.gem'}.split(/\n/).each do |gem|
-    puts %x{cd vendor/cache && gem unpack #{gem} && rm #{gem}} unless gem.nil?
+  Gem.path.each do |gem_path|
+    break if system "gem install unpack ruby-growl movie_searcher undertexter --install-dir '#{gem_path}'"
   end
-  
-  # Removing the test gems
-  puts %x{cd vendor/cache && rm -r rspec*}
 end
 

@@ -4,19 +4,35 @@
   # 1 - Empty arguments
   # 2 - No movie found
   # 3 - No subtitle found
+
+
 require 'unpack'
 require 'ruby-growl'
 require 'movie_searcher'
 require 'undertexter'
+require 'yaml'
 
-module MovishScript
-  def self.run(dir, name)
-    
+class MovishScript
+  attr_accessor :file, :config
+  
+  def initialize(args)
+    @growl  = Growl.new("localhost", "ruby-growl", ["ruby-growl Notification"])
+    @file   = File.expand_path(args[:config] || "lib/movish_script/config.yaml")
+    @config = YAML::load(File.read(@file))
+  end
+  
+  def growl(title, body, type)
+    @growl.notify("ruby-growl Notification", title, body) if @config[:growl][:global] and @config[:growl][type]
+  end
+  
+  def self.run(args)
+    dir, name = args[:dir], args[:file] 
     # If no arguments a being passed, then we do nothing
     return 1 if dir.nil? or name.nil? or dir.empty? or name.empty?
     
-    growl = Growl.new("localhost", "ruby-growl", ["ruby-growl Notification"])
-    growl.notify("ruby-growl Notification", "Movish", "Vänta...")
+    this = MovishScript.new(args)
+    
+    this.growl("Movish", "Vänta...", :init)
 
     # Hela lankvagen till filen som laddades hem
     full_path = "#{dir}/#{name}"
@@ -31,14 +47,14 @@ module MovishScript
     files = File.directory?(full_path) ? Unpack.runner!(full_path) : []
     
     # Meddelar anvandaren om att nerladdningen ar uppackad, om nagot fanns att packa upp
-    growl.notify("ruby-growl Notification", "Uppackat!", title) if files.any?
+    this.growl("Uppackat!", title, :unpack) if files.any?
 
     # Hamtar filmen fran IMDB
     movie = MovieSearcher.find_by_download(full_path)
 
     # Avbryter om vi inte hittade nagon film
     if movie.nil?
-      growl.notify("ruby-growl Notification", "Inget hittades",  title); return 2
+      this.growl("Inget hittades",  title, :movie); return 2
     end
     
     # Hamtar undertexten
@@ -46,7 +62,7 @@ module MovishScript
     
     # Avbryter om vi inte hittade nagon undertext
     if subtitle.nil?
-      growl.notify("ruby-growl Notification", "Ingen undertext hittades", movie.title); return 3
+      this.growl("Ingen undertext hittades", movie.title, :movie); return 3
     end
     
     # Laddar ner undertexten
@@ -56,6 +72,17 @@ module MovishScript
     Unpack.it!(:file => file, :to => path) unless file.nil?
 
     # Meddelar anvandaren att allt gick bra
-    growl.notify("ruby-growl Notification", "Undertext hittades", subtitle.title)
+    this.growl("Undertext hittades", subtitle.title, :subtitle)
+  end
+  
+  def self.config(args)
+    this = MovishScript.new(args[:options])
+    args[:write].each do |attr, value|
+      this.config[attr.split('.').first.to_sym][attr.split('.').last.to_sym] = value
+    end
+    
+    file = File.new(this.file, 'w+')
+    file.write(this.config.to_yaml)
+    file.close
   end
 end
