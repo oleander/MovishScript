@@ -3,13 +3,13 @@ $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = "movish_script"
-  s.version     = '1'
+  s.version     = '0.0.1'
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["TODO: Write your name"]
-  s.email       = ["TODO: Write your email address"]
-  s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
+  s.authors     = ["Linus Oleander"]
+  s.email       = ["linus@oleander.nu"]
+  s.homepage    = "https://github.com/oleander/MovishScript"
+  s.summary     = %q{A Transmission callback that unpacks the downloaded item, renames it and downloads the appropriate subtitle}
+  s.description = %q{An implementation of the gems undertexter, movie_searcher amd unpack}
 
   s.rubyforge_project = "movish_script"
 
