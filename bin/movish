@@ -1,11 +1,13 @@
 #!/usr/bin/env ruby
+require 'rubygems'
 
 $:.push File.expand_path("../../lib", __FILE__)
+Gem.path.push File.expand_path("../../.gems", __FILE__)
 
 require 'daemons'
 require 'movish_script'
 
-Daemons.daemonize
+# Daemons.daemonize
 if ENV['TR_TORRENT_DIR'] and ENV['TR_TORRENT_NAME']
   ARGV[0], ARGV[1] = ENV['TR_TORRENT_DIR'], ENV['TR_TORRENT_NAME']
 elsif(not ARGV.count == 2)

@@ -8,6 +8,7 @@
   # 5 - Unpacking success
   # 6 - Unpacking failed
 
+require 'rubygems'
 require 'unpack'
 require 'ruby-growl'
 require 'movie_searcher'
@@ -18,9 +19,10 @@ class MovishScript
   attr_accessor :file, :config, :imdb_movie, :files, :messages
   
   def initialize(args = {})
-    @growl  = Growl.new("localhost", "ruby-growl", ["ruby-growl Notification"])
-    @file   = File.expand_path(args[:config] || "lib/movish_script/config.yaml")
-    @config = YAML::load(File.read(@file))
+    current   = File.expand_path(File.dirname(__FILE__))
+    @growl    = Growl.new("localhost", "ruby-growl", ["ruby-growl Notification"])
+    @file     = File.join(current, "movish_script/config.yaml")
+    @config   = YAML::load(File.read(@file))
     @messages = {
       :init => {
         :title => "Movish",

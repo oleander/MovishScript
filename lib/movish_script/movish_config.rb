@@ -1,6 +1,13 @@
 require 'yaml'
 module MovishConfig
-  def self.generate!(file = "lib/movish_script/config.yaml")
+  def self.file
+    current = File.expand_path(File.dirname(__FILE__))
+    File.join(current, "config.yaml")
+  end
+  
+  def self.generate!(file = nil)
+    file = file.nil? ? self.file : file
+    
     yaml = {
       :system => {
         :active => true,
@@ -30,7 +37,8 @@ module MovishConfig
     open.close
   end
   
-  def self.read(file = "lib/movish_script/config.yaml")
+  def self.read(file = nil)
+    file = file.nil? ? self.file : file
     YAML.load(File.read(file))
   end
 end
