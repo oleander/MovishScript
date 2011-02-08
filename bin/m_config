@@ -1,6 +1,9 @@
 #!/usr/bin/env ruby
 
+require 'rubygems'
+
 $:.push File.expand_path("../../lib", __FILE__)
+Gem.path.push File.expand_path("../../.gems", __FILE__)
 
 require 'movish_script'
 

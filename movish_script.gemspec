@@ -1,9 +1,11 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
 
+require 'movish_script/version'
+
 Gem::Specification.new do |s|
   s.name        = "movish_script"
-  s.version     = '0.0.1'
+  s.version     = Version::CURRENT
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Linus Oleander"]
   s.email       = ["linus@oleander.nu"]
