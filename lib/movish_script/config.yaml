@@ -1,18 +1,18 @@
 --- 
+:subtitle: 
+  :active: true
+  :language: :swedish
 :system: 
   :active: true
 :growl: 
-  :movie: true
-  :global: true
-  :init: true
-  :unpack: true
   :subtitle: true
+  :global: true
+  :movie: true
+  :unpack: true
+  :init: true
 :unpack: 
+  :force_remove: false
   :active: true
   :remove: false
   :depth: 2
   :min_files: 5
-  :force_remove: false
-:subtitle: 
-  :active: true
-  :language: :swedish
